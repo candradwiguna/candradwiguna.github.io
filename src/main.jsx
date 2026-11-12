@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Route, Routes, useParams } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthProvider';
 import AdminLoginPage from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
 import RequireAdmin from './auth/RequireAdmin';
 import './styles.css';
 
@@ -30,6 +31,5 @@ function Category() {
 }
 function Footer() { return <footer><span>© Candra Dwiguna</span><span>Bandung, Indonesia</span><span>Built with care.</span></footer>; }
 function AdminLogin() { return <AdminLoginPage />; }
-function AdminDashboard() { return <><Header /><main className="admin"><p className="eyebrow">Private area</p><h1>Portfolio editor</h1><p>Login berhasil. Dashboard CRUD akan ditambahkan pada tahap berikutnya.</p><Link className="text-link" to="/">Back to portfolio</Link></main></>; }
 function App() { return <Routes><Route path="/" element={<Home />} /><Route path="/admin/login" element={<AdminLogin />} /><Route element={<RequireAdmin />}><Route path="/admin/dashboard" element={<AdminDashboard />} /></Route><Route path="/:slug" element={<Category />} /></Routes>; }
 createRoot(document.getElementById('root')).render(<BrowserRouter><AuthProvider><App /></AuthProvider></BrowserRouter>);
