@@ -5,6 +5,7 @@ import { AuthProvider } from './auth/AuthProvider';
 import AdminLoginPage from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import RequireAdmin from './auth/RequireAdmin';
+import { useSite } from './lib/site';
 import './styles.css';
 
 const categories = [
@@ -15,19 +16,21 @@ const categories = [
   ['content-creator-video', 'Content Creator Video', 'Short-form video, editing, motion, and content workflows.']
 ];
 
-function Header() {
-  return <header className="site-header"><Link className="wordmark" to="/">Candra Dwiguna<span>.</span></Link><nav aria-label="Main navigation"><Link to="/">Index</Link><a href="#contact">Contact</a><Link to="/admin/login">Admin</Link></nav></header>;
+function Header({ hiddenContact }) {
+  return <header className="site-header"><Link className="wordmark" to="/">Candra Dwiguna<span>.</span></Link><nav aria-label="Main navigation"><Link to="/">Index</Link>{!hiddenContact && <a href="#contact">Contact</a>}<Link to="/admin/login">Admin</Link></nav></header>;
 }
-function Contact() {
-  return <section id="contact" className="contact"><p className="eyebrow">05 / Contact</p><h2>Let’s make the next useful thing.</h2><div className="contact-links"><a href="mailto:dwiguna.candra@gmail.com">dwiguna.candra@gmail.com</a><a href="https://wa.me/6289616424972" target="_blank" rel="noreferrer">WhatsApp</a><a href="https://www.instagram.com/candradwig/" target="_blank" rel="noreferrer">Instagram / personal</a><a href="https://www.instagram.com/canillustration/" target="_blank" rel="noreferrer">Instagram / illustration</a><a href="https://www.instagram.com/cndrdwgn/" target="_blank" rel="noreferrer">Instagram / photography</a></div></section>;
+const contactLinks = (c) => [['mailto:' + c.email, c.email], [`https://wa.me/${c.whatsapp}`, 'WhatsApp'], [c.instagram, 'Instagram / personal'], [c.illustrationInstagram, 'Instagram / illustration'], [c.photographyInstagram, 'Instagram / photography']];
+function Contact({ contact }) {
+  return <section id="contact" className="contact"><p className="eyebrow">05 / Contact</p><h2>Let’s make the next useful thing.</h2><div className="contact-links">{contactLinks(contact).filter(([href]) => href).map(([href, label]) => <a key={label} href={href} {...(href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noreferrer' })}>{label}</a>)}</div></section>;
 }
 function Home() {
-  return <><Header /><main><section className="hero"><div><p className="eyebrow">01 / Candra Dwiguna</p><h1>Creative work, technical thinking, <em>useful outcomes.</em></h1><p className="lede">Multi-disciplinary creative and technical specialist working across design, illustration, 3D, photography, video, websites, and automation.</p></div><img className="profile" src="/profile.jpg" width="640" height="800" fetchPriority="high" alt="Foto profil Candra Dwiguna" /></section><section className="manifesto"><p className="eyebrow">02 / How I work</p><p className="statement">I move between the visual and the practical. A good result should be clear enough to understand, considered enough to remember, and useful enough to keep.</p></section><section className="paths"><p className="eyebrow">03 / Selected paths</p><div className="path-list">{categories.map(([slug, title, text], i) => <Link className="path" to={`/${slug}`} key={slug}><span>0{i + 1}</span><div><h2>{title}</h2><p>{text}</p></div><b aria-hidden="true">↗</b></Link>)}</div></section><Contact /></main><Footer /></>;
+  const site = useSite();
+  return <><Header hiddenContact={site.hidden.contact} /><main>{!site.hidden.hero && <section className="hero"><div><p className="eyebrow">{site.hero.eyebrow}</p><h1>{site.hero.headline} {site.hero.accent && <em>{site.hero.accent}</em>}</h1>{site.hero.lede && <p className="lede">{site.hero.lede}</p>}</div>{site.profile.image && <img className="profile" src={site.profile.image} width="640" height="800" fetchPriority="high" alt={site.profile.alt} />}</section>}{!site.hidden.bio && <section className="manifesto"><p className="eyebrow">{site.bio.eyebrow}</p><p className="statement">{site.bio.statement}</p></section>}{!site.hidden.paths && <section className="paths"><p className="eyebrow">03 / Selected paths</p><div className="path-list">{categories.map(([slug, title, text], i) => <Link className="path" to={`/${slug}`} key={slug}><span>0{i + 1}</span><div><h2>{title}</h2><p>{text}</p></div><b aria-hidden="true">↗</b></Link>)}</div></section>}{!site.hidden.contact && <Contact contact={site.contact} />}</main><Footer /></>;
 }
 function Category() {
-  const { slug } = useParams(); const item = categories.find(([key]) => key === slug);
-  if (!item) return <><Header /><main className="not-found"><p className="eyebrow">404</p><h1>This page is not in the index.</h1><Link className="text-link" to="/">Return home</Link></main></>;
-  return <><Header /><main><section className="category-intro"><p className="eyebrow">04 / Category</p><h1>{item[1]}</h1><p className="lede">{item[2]}</p></section><section className="empty-work"><p className="eyebrow">Portfolio / {item[1]}</p><h2>Work will be added here.</h2><p>This category is ready for real projects, process notes, and images. No placeholder work is shown.</p><Link className="text-link" to="/admin/login">Add work through admin</Link></section><Contact /></main><Footer /></>;
+  const { slug } = useParams(); const site = useSite(); const item = categories.find(([key]) => key === slug);
+  if (!item) return <><Header hiddenContact={site.hidden.contact} /><main className="not-found"><p className="eyebrow">404</p><h1>This page is not in the index.</h1><Link className="text-link" to="/">Return home</Link></main></>;
+  return <><Header hiddenContact={site.hidden.contact} /><main><section className="category-intro"><p className="eyebrow">04 / Category</p><h1>{item[1]}</h1><p className="lede">{item[2]}</p></section><section className="empty-work"><p className="eyebrow">Portfolio / {item[1]}</p><h2>Work will be added here.</h2><p>This category is ready for real projects, process notes, and images. No placeholder work is shown.</p><Link className="text-link" to="/admin/login">Add work through admin</Link></section>{!site.hidden.contact && <Contact contact={site.contact} />}</main><Footer /></>;
 }
 function Footer() { return <footer><span>© Candra Dwiguna</span><span>Bandung, Indonesia</span><span>Built with care.</span></footer>; }
 function AdminLogin() { return <AdminLoginPage />; }

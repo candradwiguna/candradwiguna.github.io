@@ -25,6 +25,20 @@ npm run build
 - `/it-website-automation`
 - `/content-creator-video`
 
+## Mengelola tampilan dari admin
+
+Login di `/admin/login`, lalu di dashboard ada panel **Tampilan & isi halaman utama** (`site/settings`):
+
+- palette (paper, ink, muted, accent, line)
+- font (4 pasangan yang dimuat on demand dari Google Fonts)
+- spacing/density dan radius sudut
+- show/hide section: hero, biography, selected paths, contact
+- headline utama, headline aksen, deskripsi hero, biography
+- foto profil (path repository seperti `/profile.jpg`, atau URL gambar penuh) dan alt text
+
+Perubahan tersimpan di `site/settings` dan langsung dipakai halaman publik; `hidden` disimpan lengkap agar section yang di-uncheck benar-benar hilang.
+Firebase Storage tidak dipakai, jadi foto profil diunggah lewat GitHub di `public/`.
+
 ## Firebase setup gratis
 
 Firebase dipakai hanya untuk Authentication dan Firestore pada Spark. Firebase Storage sengaja tidak dipakai karena memerlukan Blaze/pay-as-you-go. Gambar disimpan di `public/portfolio/` dan dideploy lewat GitHub Pages. Lihat [`docs/firebase-setup.md`](docs/firebase-setup.md).
