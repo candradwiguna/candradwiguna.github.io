@@ -1,6 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Route, Routes, useParams } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthProvider';
+import AdminLoginPage from './pages/AdminLogin';
+import RequireAdmin from './auth/RequireAdmin';
 import './styles.css';
 
 const categories = [
@@ -26,6 +29,7 @@ function Category() {
   return <><Header /><main><section className="category-intro"><p className="eyebrow">04 / Category</p><h1>{item[1]}</h1><p className="lede">{item[2]}</p></section><section className="empty-work"><p className="eyebrow">Portfolio / {item[1]}</p><h2>Work will be added here.</h2><p>This category is ready for real projects, process notes, and images. No placeholder work is shown.</p><Link className="text-link" to="/admin/login">Add work through admin</Link></section><Contact /></main><Footer /></>;
 }
 function Footer() { return <footer><span>© Candra Dwiguna</span><span>Bandung, Indonesia</span><span>Built with care.</span></footer>; }
-function AdminLogin() { return <><Header /><main className="admin"><p className="eyebrow">Private area</p><h1>Admin editor</h1><p>This area is reserved for Candra. Firebase authentication will be connected next.</p><Link className="text-link" to="/">Back to portfolio</Link></main></>; }
-function App() { return <Routes><Route path="/" element={<Home />} /><Route path="/admin/login" element={<AdminLogin />} /><Route path="/:slug" element={<Category />} /></Routes>; }
-createRoot(document.getElementById('root')).render(<BrowserRouter><App /></BrowserRouter>);
+function AdminLogin() { return <AdminLoginPage />; }
+function AdminDashboard() { return <><Header /><main className="admin"><p className="eyebrow">Private area</p><h1>Portfolio editor</h1><p>Login berhasil. Dashboard CRUD akan ditambahkan pada tahap berikutnya.</p><Link className="text-link" to="/">Back to portfolio</Link></main></>; }
+function App() { return <Routes><Route path="/" element={<Home />} /><Route path="/admin/login" element={<AdminLogin />} /><Route element={<RequireAdmin />}><Route path="/admin/dashboard" element={<AdminDashboard />} /></Route><Route path="/:slug" element={<Category />} /></Routes>; }
+createRoot(document.getElementById('root')).render(<BrowserRouter><AuthProvider><App /></AuthProvider></BrowserRouter>);
