@@ -25,11 +25,11 @@ npm run build
 - `/it-website-automation`
 - `/content-creator-video`
 
-## Firebase setup
+## Firebase setup gratis
 
-The public shell is currently usable without Firebase. The admin CRUD/auth layer is the next connection step. Follow the complete guide in [`docs/firebase-setup.md`](docs/firebase-setup.md).
+Firebase dipakai hanya untuk Authentication dan Firestore pada Spark. Firebase Storage sengaja tidak dipakai karena memerlukan Blaze/pay-as-you-go. Gambar disimpan di `public/portfolio/` dan dideploy lewat GitHub Pages. Lihat [`docs/firebase-setup.md`](docs/firebase-setup.md).
 
-Never commit `.env.local`, passwords, service-account JSON, or Firebase Admin SDK credentials.
+Jangan pernah commit `.env.local`, password, service-account JSON, atau Firebase Admin SDK credentials.
 
 ## GitHub Pages
 
