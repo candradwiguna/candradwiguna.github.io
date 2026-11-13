@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { listProjects } from './lib/repository';
 import { BrowserRouter, Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
@@ -31,17 +31,30 @@ const drivePreviewUrl = (url = '') => { const match = url.match(/drive\.google\.
 const driveFileId = (url = '') => (url.match(/drive\.google\.com\/file\/d\/([^/]+)/) || [])[1];
 
 // Drive tidak memberi tahu rasio video, jadi orientasinya ditebak dari thumbnail resminya.
-// Tanpa ini video vertikal terkunci di kotak 16:9 dan tampil kecil dengan pilar hitam besar.
+// Tinggi kotak dihitung dari lebar terukur, bukan diserahkan ke aspect-ratio: Safari lama
+// mengabaikannya pada iframe dan jatuh ke tinggi default 150px, sehingga video vertikal
+// tampil kecil dengan pita hitam lebar di kiri-kanan.
 function VideoFrame({ url, title }) {
   const [portrait, setPortrait] = useState(false);
+  const [height, setHeight] = useState(0);
+  const box = useRef(null);
   useEffect(() => {
     const id = driveFileId(url); if (!id) return; let alive = true;
     const probe = new Image();
     probe.onload = () => { if (alive) setPortrait(probe.naturalHeight > probe.naturalWidth); };
+    probe.onerror = () => { if (alive) probe.src = `https://drive.google.com/thumbnail?id=${id}`; };
     probe.src = `https://drive.google.com/thumbnail?id=${id}&sz=w64`;
     return () => { alive = false; };
   }, [url]);
-  return <iframe className={portrait ? 'portrait' : undefined} title={`Video ${title}`} src={drivePreviewUrl(url)} allow="autoplay" loading="lazy"></iframe>;
+  useEffect(() => {
+    const measure = () => setHeight(box.current ? Math.round(box.current.clientWidth * (portrait ? 16 / 9 : 9 / 16)) : 0);
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [portrait]);
+  return <span ref={box} className={portrait ? 'video-box portrait' : 'video-box'}>
+    <iframe title={`Video ${title}`} src={drivePreviewUrl(url)} style={height ? { height: `${height}px` } : undefined} allow="autoplay" loading="lazy"></iframe>
+  </span>;
 }
 function Contact({ contact }) {
   return <section id="contact" data-section="05 / Contact" className="contact"><p className="eyebrow" data-reveal>05 / Contact</p><h2 data-reveal>Let’s make the next useful thing.</h2><div className="contact-links" data-reveal>{contactLinks(contact).filter(([href]) => href).map(([href, label]) => <a key={label} href={href} {...(href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noreferrer' })}>{label}</a>)}</div></section>;
