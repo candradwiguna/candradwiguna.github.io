@@ -5,18 +5,25 @@ const prefers = (query) => typeof matchMedia === 'function' && matchMedia(query)
 
 // Satu observer untuk seluruh halaman. Class .in baru dipasang kalau html.animate ada,
 // jadi kalau JS gagal konten tetap terlihat (bukan opacity:0 selamanya).
+// Elemen yang datang belakangan (hasil fetch Firestore) juga diobserve lewat MutationObserver,
+// kalau tidak, konten async tetap opacity:0 dan halaman terlihat kosong.
 export function useReveal(dep) {
   useEffect(() => {
-    const els = [...document.querySelectorAll('[data-reveal]:not(.in)')];
+    const els = () => [...document.querySelectorAll('[data-reveal]:not(.in)')];
     if (prefers('(prefers-reduced-motion: reduce)') || !('IntersectionObserver' in window)) {
-      els.forEach((el) => el.classList.add('in'));
+      els().forEach((el) => el.classList.add('in'));
       return;
     }
     const io = new IntersectionObserver((entries) => {
       for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
     }, { rootMargin: '0px 0px -10% 0px' });
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    const watch = () => els().forEach((el) => io.observe(el));
+    watch();
+    // rAF throttle: jangan querySelectorAll di setiap mutation React.
+    let queued = 0;
+    const mo = new MutationObserver(() => { if (!queued) queued = requestAnimationFrame(() => { queued = 0; watch(); }); });
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => { if (queued) cancelAnimationFrame(queued); io.disconnect(); mo.disconnect(); };
   }, [dep]);
 }
 
@@ -101,7 +108,7 @@ function GlyphField() {
           const amp = 8 + (c % 4) * 5;
           const y = (r + 0.5) * chh + glyphOffset(i * 0.32, t + c * 0.22, amp);
           ctx.fillStyle = i % 17 === 0 ? palette.accent : palette.muted;
-          ctx.globalAlpha = i % 17 === 0 ? 0.5 : 0.28;
+          ctx.globalAlpha = i % 17 === 0 ? 0.3 : 0.15;
           ctx.fillText(cells[i], (c + 0.5) * cw, y);
         }
       }

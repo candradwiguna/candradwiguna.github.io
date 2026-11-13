@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { db } from './firebase';
 
 function requireDb() {
@@ -6,9 +6,30 @@ function requireDb() {
   return db;
 }
 
-export async function listProjects() {
-  const snapshot = await getDocs(query(collection(requireDb(), 'projects'), orderBy('createdAt', 'desc')));
-  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+// Path gambar yang diketik manual sering datang sebagai "portofolio/x /y.jpeg" (spasi
+// sebelum slash) atau tanpa slash depan, jadi URL-nya rusak. Normalisasi saat dibaca.
+function normalizeImagePath(value) {
+  if (!value) return value;
+  if (/^(https?:|data:|\/\/)/.test(value)) return value;
+  return `/${value.replace(/\s*\/\s*/g, '/').replace(/^\/+/, '')}`;
+}
+
+// publishedOnly wajib untuk pembaca anonim: rules hanya mengizinkan list kalau query
+// sendiri sudah membatasi published == true. orderBy createdAt tidak bisa digabung
+// tanpa composite index, jadi urutannya dikerjakan di klien.
+export async function listProjects(publishedOnly = false) {
+  const database = requireDb();
+  const ref = publishedOnly
+    ? query(collection(database, 'projects'), where('published', '==', true))
+    : query(collection(database, 'projects'), orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(ref);
+  const items = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+  const normalized = items.map((item) => ({
+    ...item,
+    image: normalizeImagePath(item.image),
+    videoThumbnail: normalizeImagePath(item.videoThumbnail),
+  }));
+  return publishedOnly ? normalized.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0)) : normalized;
 }
 
 export async function saveProject(project) {
