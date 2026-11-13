@@ -4,6 +4,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AdminDashboard from './pages/AdminDashboard';
+import { uploadConfigured } from './lib/cloudinary';
 
 vi.mock('./auth/AuthProvider', () => ({ useAuth: () => ({ user: { email: 'admin@example.com' }, logout: () => {} }) }));
 vi.mock('./lib/repository', () => ({
@@ -21,7 +22,8 @@ describe('admin dashboard', () => {
     expect(screen.getByLabelText('Email').value).toBe('me@example.com');
     expect(screen.getByRole('button', { name: 'Simpan tampilan' })).toBeTruthy();
     expect(document.querySelectorAll('form').length).toBe(3);
-    // Tanpa env Cloudinary, kontrol upload tidak boleh muncul supaya form tetap berfungsi apa adanya.
-    expect(document.querySelectorAll('input[type="file"]').length).toBe(0);
+    // Kontrol upload hanya muncul kalau env Cloudinary ada; jumlahnya ikut flag supaya tes
+    // tidak bergantung pada .env.local yang dipakai saat menjalankan tes secara lokal.
+    expect(document.querySelectorAll('input[type="file"]').length).toBe(uploadConfigured ? 2 : 0);
   });
 });
