@@ -8,8 +8,14 @@ function requireDb() {
 
 // Path gambar yang diketik manual sering datang sebagai "portofolio/x /y.jpeg" (spasi
 // sebelum slash) atau tanpa slash depan, jadi URL-nya rusak. Normalisasi saat dibaca.
-function normalizeImagePath(value) {
+// Gambar dari Google Drive tidak perlu di-commit ke repo: Drive tidak menyajikan file mentah,
+// jadi link-nya diarahkan ke endpoint thumbnail. sz=w2000 cukup tajam untuk web dan tidak
+// pernah diperbesar melebihi ukuran aslinya.
+const driveFileId = (value) => (value.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([^/&?]+)/) || [])[1];
+export function normalizeImagePath(value) {
   if (!value) return value;
+  const id = driveFileId(value);
+  if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
   if (/^(https?:|data:|\/\/)/.test(value)) return value;
   return `/${value.replace(/\s*\/\s*/g, '/').replace(/^\/+/, '')}`;
 }
