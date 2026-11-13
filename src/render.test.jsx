@@ -8,6 +8,7 @@ vi.mock('./lib/repository', () => ({
     contact: { email: 'me@example.com' }
   }),
   listProjects: () => Promise.resolve([]),
+  projectImages: (item) => (item.images?.length ? item.images : [item.image].filter(Boolean)),
   saveProject: vi.fn(), removeProject: vi.fn(), saveSiteSettings: vi.fn()
 }));
 

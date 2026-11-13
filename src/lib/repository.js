@@ -20,6 +20,14 @@ export function normalizeImagePath(value) {
   return `/${value.replace(/\s*\/\s*/g, '/').replace(/^\/+/, '')}`;
 }
 
+// Satu project boleh punya banyak gambar. Project lama hanya menyimpan satu `image`, jadi
+// nilai itu dipakai sebagai daftar berisi satu item supaya tidak perlu migrasi data.
+export function projectImages(item) {
+  const stored = Array.isArray(item?.images) ? item.images.filter(Boolean) : [];
+  const images = stored.length ? stored : [item?.image].filter(Boolean);
+  return images.map(normalizeImagePath);
+}
+
 // publishedOnly wajib untuk pembaca anonim: rules hanya mengizinkan list kalau query
 // sendiri sudah membatasi published == true. orderBy createdAt tidak bisa digabung
 // tanpa composite index, jadi urutannya dikerjakan di klien.
@@ -34,6 +42,7 @@ export async function listProjects(publishedOnly = false) {
     ...item,
     image: normalizeImagePath(item.image),
     videoThumbnail: normalizeImagePath(item.videoThumbnail),
+    images: projectImages(item),
   }));
   return publishedOnly ? normalized.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0)) : normalized;
 }

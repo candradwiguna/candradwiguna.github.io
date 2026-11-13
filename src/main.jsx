@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { listProjects } from './lib/repository';
+import { listProjects, projectImages } from './lib/repository';
 import { BrowserRouter, Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthProvider';
 import AdminLoginPage from './pages/AdminLogin';
@@ -56,6 +56,21 @@ function VideoFrame({ url, title }) {
     <iframe title={`Video ${title}`} src={drivePreviewUrl(url)} style={height ? { height: `${height}px` } : undefined} allow="autoplay" loading="lazy"></iframe>
   </span>;
 }
+// Banyak gambar per project: "gallery" menggeser satu per satu, "collage" menaruh gambar
+// pertama selebar kolom lalu sisanya berdampingan. Satu gambar tetap seperti sebelumnya.
+function ProjectImages({ project }) {
+  const [cover, ...rest] = projectImages(project);
+  if (!cover) return null;
+  const alt = project.imageAlt || project.title;
+  if (!rest.length) return <img src={cover} loading="lazy" alt={alt} />;
+  const layout = project.imageLayout === 'collage' ? 'collage' : 'gallery';
+  const count = rest.length + 1;
+  const label = `${count} gambar, geser ke samping`;
+  return <div className={layout} data-count={count} {...(layout === 'gallery' ? { role: 'group', 'aria-label': label } : {})}>
+    {[cover, ...rest].map((src, i) => <img key={src + i} src={src} loading={i ? 'lazy' : undefined} alt={`${alt} ${i + 1}`} />)}
+  </div>;
+}
+
 function Contact({ contact }) {
   return <section id="contact" data-section="05 / Contact" className="contact"><p className="eyebrow" data-reveal>05 / Contact</p><h2 data-reveal>Let’s make the next useful thing.</h2><div className="contact-links" data-reveal>{contactLinks(contact).filter(([href]) => href).map(([href, label]) => <a key={label} href={href} {...(href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noreferrer' })}>{label}</a>)}</div></section>;
 }
@@ -71,7 +86,7 @@ function Category() {
   useReveal(slug);
   useEffect(() => { listProjects(true).then((items) => setProjects(items.filter((project) => project.category === slug))).catch((e) => { setError(e.message); setProjects([]); }).finally(() => setLoading(false)); }, [slug]);
   if (!item) return <><Header hiddenContact /><main className="not-found"><p className="eyebrow" data-reveal>404</p><h1>{words('This page is not in the index.')}</h1><Link className="text-link" to="/" data-reveal>Return home</Link></main></>;
-  return <><Header hiddenContact={site.hidden.contact} active="04 / Category" /><main><section className="category-intro"><p className="eyebrow" data-reveal>04 / Category</p><h1>{words(item[1])}</h1><p className="lede" data-reveal>{item[2]}</p></section><section className="work-list"><p className="eyebrow" data-reveal>Portfolio / {item[1]}</p>{loading ? <p>Memuat project...</p> : error ? <p className="form-error" role="alert">Gagal memuat portfolio: {error}</p> : projects.length === 0 ? <div className="empty-work" data-reveal><h2>Work will be added here.</h2><p>This category is ready for real projects, process notes, and images. No placeholder work is shown.</p><Link className="text-link" to="/admin/login">Add work through admin</Link></div> : projects.map((project, i) => <article className="public-project" key={project.id} data-reveal style={{ transitionDelay: `${i * 80}ms` }}>{project.image && <img src={project.image} loading="lazy" alt={project.imageAlt || project.title} />}{project.videoUrl && <div className="video-preview">{project.videoThumbnail && <img src={project.videoThumbnail} loading="lazy" alt={`Thumbnail video ${project.title}`} />}<VideoFrame url={project.videoUrl} title={project.title} /><a className="text-link" href={project.videoUrl} target="_blank" rel="noreferrer">Open video in Google Drive</a></div>}<p className="eyebrow">{project.role || 'Project'}</p><h2>{project.title}</h2><p>{project.summary}</p>{project.videoDuration && <small>Durasi: {project.videoDuration}</small>}{project.videoRole && <small>Role produksi: {project.videoRole}</small>}{project.externalUrl && <a className="text-link" href={project.externalUrl} target="_blank" rel="noreferrer">Open project</a>}</article>)}</section>{!site.hidden.contact && <Contact contact={site.contact} />}</main><Footer /></>;
+  return <><Header hiddenContact={site.hidden.contact} active="04 / Category" /><main><section className="category-intro"><p className="eyebrow" data-reveal>04 / Category</p><h1>{words(item[1])}</h1><p className="lede" data-reveal>{item[2]}</p></section><section className="work-list"><p className="eyebrow" data-reveal>Portfolio / {item[1]}</p>{loading ? <p>Memuat project...</p> : error ? <p className="form-error" role="alert">Gagal memuat portfolio: {error}</p> : projects.length === 0 ? <div className="empty-work" data-reveal><h2>Work will be added here.</h2><p>This category is ready for real projects, process notes, and images. No placeholder work is shown.</p><Link className="text-link" to="/admin/login">Add work through admin</Link></div> : projects.map((project, i) => <article className="public-project" key={project.id} data-reveal style={{ transitionDelay: `${i * 80}ms` }}><ProjectImages project={project} />{project.videoUrl && <div className="video-preview">{project.videoThumbnail && <img src={project.videoThumbnail} loading="lazy" alt={`Thumbnail video ${project.title}`} />}<VideoFrame url={project.videoUrl} title={project.title} /><a className="text-link" href={project.videoUrl} target="_blank" rel="noreferrer">Open video in Google Drive</a></div>}<p className="eyebrow">{project.role || 'Project'}</p><h2>{project.title}</h2><p>{project.summary}</p>{project.videoDuration && <small>Durasi: {project.videoDuration}</small>}{project.videoRole && <small>Role produksi: {project.videoRole}</small>}{project.externalUrl && <a className="text-link" href={project.externalUrl} target="_blank" rel="noreferrer">Open project</a>}</article>)}</section>{!site.hidden.contact && <Contact contact={site.contact} />}</main><Footer /></>;
 }
 function Footer() { return <footer><span>© Candra Dwiguna</span><span>Bandung, Indonesia</span><span>Built with care.</span></footer>; }
 function AdminLogin() { return <AdminLoginPage />; }

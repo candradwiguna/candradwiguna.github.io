@@ -25,5 +25,8 @@ describe('admin dashboard', () => {
     // Kontrol upload hanya muncul kalau env Cloudinary ada; jumlahnya ikut flag supaya tes
     // tidak bergantung pada .env.local yang dipakai saat menjalankan tes secara lokal.
     expect(document.querySelectorAll('input[type="file"]').length).toBe(uploadConfigured ? 2 : 0);
+    expect(screen.getByLabelText('Tambah gambar: path repo atau link Google Drive')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Tambahkan' })).toBeTruthy();
+    expect(screen.getByLabelText('Tampilan kalau gambar lebih dari satu').value).toBe('swipe');
   });
 });
