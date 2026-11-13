@@ -41,7 +41,7 @@ function VideoFrame({ url, title }) {
     probe.src = `https://drive.google.com/thumbnail?id=${id}&sz=w64`;
     return () => { alive = false; };
   }, [url]);
-  return <iframe className={portrait ? 'portrait' : undefined} title={`Video ${title}`} src={drivePreviewUrl(url)} width="1200" height="675" allow="autoplay" loading="lazy"></iframe>;
+  return <iframe className={portrait ? 'portrait' : undefined} title={`Video ${title}`} src={drivePreviewUrl(url)} allow="autoplay" loading="lazy"></iframe>;
 }
 function Contact({ contact }) {
   return <section id="contact" data-section="05 / Contact" className="contact"><p className="eyebrow" data-reveal>05 / Contact</p><h2 data-reveal>Let’s make the next useful thing.</h2><div className="contact-links" data-reveal>{contactLinks(contact).filter(([href]) => href).map(([href, label]) => <a key={label} href={href} {...(href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noreferrer' })}>{label}</a>)}</div></section>;
