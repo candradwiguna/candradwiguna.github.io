@@ -36,6 +36,12 @@ describe('banyak gambar per project', () => {
     expect(alts).toEqual(['Alt contoh 1', 'Alt contoh 2', 'Alt contoh 3']);
     // Gambar pertama memakai src sampul, sisanya daftar images.
     expect(gallery.querySelector('img').getAttribute('src')).toBe('/a.jpg');
+    // Titik penanda geser: satu tombol per gambar, yang aktif ditandai aria-current.
+    const dots = document.querySelectorAll('.gallery-dots button');
+    expect(dots.length).toBe(3);
+    expect([...dots].map((d) => d.getAttribute('aria-label'))).toEqual(['Gambar 1 dari 3', 'Gambar 2 dari 3', 'Gambar 3 dari 3']);
+    expect(dots[0].getAttribute('aria-current')).toBe('true');
+    expect(dots[2].getAttribute('aria-current')).toBe('false');
   });
 
   it('uses the collage grid when the project asks for it', async () => {
@@ -45,11 +51,12 @@ describe('banyak gambar per project', () => {
     expect(collage.querySelectorAll('img').length).toBe(4);
     expect(document.querySelector('.gallery')).toBeNull();
     expect(collage.getAttribute('aria-label')).toBeNull();
+    expect(document.querySelector('.gallery-dots')).toBeNull();
   });
 
   it('keeps a single image as a plain img, including legacy projects with only `image`', async () => {
     await renderCategory([project({ image: '/lama.jpg' })]);
-    expect(document.querySelector('.gallery, .collage')).toBeNull();
+    expect(document.querySelector('.gallery, .collage, .gallery-dots')).toBeNull();
     const img = document.querySelector('.public-project > img');
     expect(img.getAttribute('src')).toBe('/lama.jpg');
   });

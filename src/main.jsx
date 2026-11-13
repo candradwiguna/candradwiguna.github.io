@@ -60,15 +60,37 @@ function VideoFrame({ url, title }) {
 // pertama selebar kolom lalu sisanya berdampingan. Satu gambar tetap seperti sebelumnya.
 function ProjectImages({ project }) {
   const [cover, ...rest] = projectImages(project);
+  const [active, setActive] = useState(0);
+  const strip = useRef(null);
   if (!cover) return null;
   const alt = project.imageAlt || project.title;
   if (!rest.length) return <img src={cover} loading="lazy" alt={alt} />;
   const layout = project.imageLayout === 'collage' ? 'collage' : 'gallery';
-  const count = rest.length + 1;
-  const label = `${count} gambar, geser ke samping`;
-  return <div className={layout} data-count={count} {...(layout === 'gallery' ? { role: 'group', 'aria-label': label } : {})}>
-    {[cover, ...rest].map((src, i) => <img key={src + i} src={src} loading={i ? 'lazy' : undefined} alt={`${alt} ${i + 1}`} />)}
-  </div>;
+  const slides = [cover, ...rest];
+  const count = slides.length;
+  // Titik penanda: memberi tahu bahwa gambarnya bisa digeser dan sekarang di gambar ke berapa.
+  const goTo = (index) => {
+    const el = strip.current; if (!el) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    el.scrollTo({ left: el.children[index].offsetLeft - el.offsetLeft, behavior: reduce ? 'auto' : 'smooth' });
+  };
+  const track = (e) => {
+    const el = e.currentTarget;
+    const mid = el.scrollLeft + el.clientWidth / 2;
+    let found = 0;
+    // offsetLeft diukur dari offsetParent yang sama, jadi harus dikurangi offset kotaknya dulu
+    // supaya sebanding dengan scrollLeft; tanpa itu titik aktif selalu tertinggal satu gambar.
+    [...el.children].forEach((slide, i) => {
+      if (slide.offsetLeft - el.offsetLeft + slide.offsetWidth / 2 <= mid) found = i;
+    });
+    setActive(found);
+  };
+  const dots = layout === 'gallery' && <nav className="gallery-dots" aria-label={`Navigasi gambar, ${count} gambar`}>
+    {slides.map((_, i) => <button key={i} type="button" aria-current={i === active} aria-label={`Gambar ${i + 1} dari ${count}`} onClick={() => goTo(i)} />)}
+  </nav>;
+  return <><div className={layout} ref={strip} onScroll={layout === 'gallery' ? track : undefined} data-count={count} {...(layout === 'gallery' ? { role: 'group', 'aria-label': `${count} gambar, geser ke samping` } : {})}>
+    {slides.map((src, i) => <img key={src + i} src={src} loading={i ? 'lazy' : undefined} alt={`${alt} ${i + 1}`} />)}
+  </div>{dots}</>;
 }
 
 function Contact({ contact }) {
