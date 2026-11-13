@@ -23,7 +23,7 @@ describe('uploadImage', () => {
     expect(uploadConfigured).toBe(true);
 
     const url = await uploadImage(new File(['x'], 'foto.jpg', { type: 'image/jpeg' }));
-    expect(url).toBe('https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,w_1600/v1712/portfolio/foto.jpg');
+    expect(url).toBe('https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,c_limit,w_1600/v1712/portfolio/foto.jpg');
     const [endpoint, options] = fetchMock.mock.calls[0];
     expect(endpoint).toBe('https://api.cloudinary.com/v1_1/demo/image/upload');
     expect(options.method).toBe('POST');
