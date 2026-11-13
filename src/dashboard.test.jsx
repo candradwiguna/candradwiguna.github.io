@@ -21,5 +21,7 @@ describe('admin dashboard', () => {
     expect(screen.getByLabelText('Email').value).toBe('me@example.com');
     expect(screen.getByRole('button', { name: 'Simpan tampilan' })).toBeTruthy();
     expect(document.querySelectorAll('form').length).toBe(3);
+    // Tanpa env Cloudinary, kontrol upload tidak boleh muncul supaya form tetap berfungsi apa adanya.
+    expect(document.querySelectorAll('input[type="file"]').length).toBe(0);
   });
 });
