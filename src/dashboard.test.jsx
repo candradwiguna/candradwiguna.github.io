@@ -24,9 +24,8 @@ describe('admin dashboard', () => {
     expect(document.querySelectorAll('form').length).toBe(3);
     // Kontrol upload hanya muncul kalau env Cloudinary ada; jumlahnya ikut flag supaya tes
     // tidak bergantung pada .env.local yang dipakai saat menjalankan tes secara lokal.
-    // Tiga kontrol upload: gambar project (boleh banyak), thumbnail video, dan file video.
-    expect(document.querySelectorAll('input[type="file"]').length).toBe(uploadConfigured ? 3 : 0);
-    expect(screen.getByLabelText('Video dari perangkat (mp4 / mov) — disarankan')).toBeTruthy();
+    // Dua kontrol upload: gambar project (boleh banyak) dan thumbnail video.
+    expect(document.querySelectorAll('input[type="file"]').length).toBe(uploadConfigured ? 2 : 0);
     expect(screen.getByLabelText('Tambah gambar: path repo atau link Google Drive')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Tambahkan' })).toBeTruthy();
     expect(screen.getByLabelText('Tampilan kalau gambar lebih dari satu').value).toBe('swipe');

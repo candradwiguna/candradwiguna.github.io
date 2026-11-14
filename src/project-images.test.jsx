@@ -66,22 +66,6 @@ describe('banyak gambar per project', () => {
     expect(body[0].textContent).toContain('\n');
   });
 
-  it('plays a Cloudinary video with the native player and keeps the Drive embed as fallback', async () => {
-    await renderCategory([
-      project({ image: '/a.jpg', videoFile: 'https://res.cloudinary.com/demo/video/upload/v1/a.mp4', videoRatio: 0.5625, videoThumbnail: '/thumb.jpg' }),
-      project({ id: 'p2', image: '/b.jpg', videoUrl: 'https://drive.google.com/file/d/ABC/view' })
-    ]);
-    const native = document.querySelector('.video-preview video');
-    expect(native).toBeTruthy();
-    expect(native.getAttribute('src')).toBe('https://res.cloudinary.com/demo/video/upload/v1/a.mp4');
-    expect(native.getAttribute('poster')).toBe('/thumb.jpg');
-    expect(native.hasAttribute('controls')).toBe(true);
-    expect(native.getAttribute('style')).toContain('0.5625');
-    // project kedua tanpa videoFile tetap dirender lewat sematan Google Drive
-    expect(document.querySelectorAll('.video-preview iframe').length).toBe(1);
-    expect(document.querySelectorAll('.video-preview video').length).toBe(1);
-  });
-
   it('keeps a single image as a plain img, including legacy projects with only `image`', async () => {
     await renderCategory([project({ image: '/lama.jpg' })]);
     expect(document.querySelector('.gallery, .collage, .gallery-dots')).toBeNull();
